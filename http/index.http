@@ -1,0 +1,18 @@
+### 점수 저장
+PUT http://localhost:8080/exam/examtest/score
+Content-Type: application/json
+
+{
+  "studentName": "OR",
+  "korScore": 20,
+  "englishScore": 10,
+  "mathScore": 80
+}
+
+### 합격자 조회
+GET http://localhost:8080/exam/examtest/pass
+Content-Type: application/json
+
+### 불합격자 조회
+GET http://localhost:8080/exam/examtest/fail
+Content-Type: application/json
