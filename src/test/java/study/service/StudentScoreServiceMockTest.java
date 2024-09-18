@@ -5,11 +5,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-import study.MyCalculator;
 import study.controller.response.ExamFailStudentResponse;
 import study.controller.response.ExamPassStudentResponse;
 import study.model.StudentFail;
+import study.model.StudentFailFixture;
 import study.model.StudentPass;
+import study.model.StudentPassFixture;
 import study.model.StudentScore;
 import study.model.StudentScoreFixture;
 import study.model.StudentScoreTestDataBuilder;
@@ -74,19 +75,7 @@ class StudentScoreServiceMockTest {
         StudentScore expectStudentScore = StudentScoreTestDataBuilder.passed()
                 .studentName("new name") // Test Data Builder 패턴은 이렇게 오버라이딩도 가능
                 .build();
-        StudentPass expectStudentPass = StudentPass.builder()
-                .studentName(expectStudentScore.getStudentName())
-                .exam(expectStudentScore.getExam())
-                .avgScore(
-                        (new MyCalculator(0.0)
-                                .add(expectStudentScore.getKorScore().doubleValue())
-                                .add(expectStudentScore.getEnglishScore().doubleValue())
-                                .add(expectStudentScore.getMathScore().doubleValue())
-                                .divide(3.0)
-                                .getResult()
-                        )
-                )
-                .build();
+        StudentPass expectStudentPass = StudentPassFixture.create(expectStudentScore);
 
         ArgumentCaptor<StudentScore> studentScoreArgumentCaptor = ArgumentCaptor
                 .forClass(StudentScore.class);
@@ -130,19 +119,7 @@ class StudentScoreServiceMockTest {
     public void saveScoreMockTest2() {
         // given : 평균점수가 60점 미만인 경우
         StudentScore expectStudentScore = StudentScoreFixture.failed();
-        StudentFail expectStudentFail = StudentFail.builder()
-                .studentName(expectStudentScore.getStudentName())
-                .exam(expectStudentScore.getExam())
-                .avgScore(
-                        (new MyCalculator(0.0)
-                                .add(expectStudentScore.getKorScore().doubleValue())
-                                .add(expectStudentScore.getEnglishScore().doubleValue())
-                                .add(expectStudentScore.getMathScore().doubleValue())
-                                .divide(3.0)
-                                .getResult()
-                        )
-                )
-                .build();
+        StudentFail expectStudentFail = StudentFailFixture.create(expectStudentScore);
 
         ArgumentCaptor<StudentScore> studentScoreArgumentCaptor = ArgumentCaptor
                 .forClass(StudentScore.class);
@@ -185,9 +162,10 @@ class StudentScoreServiceMockTest {
     @DisplayName("합격자 명단 가져오기 검증")
     public void getPassStudentList() {
         // given
-        StudentPass expectStudent1 = StudentPass.builder().id(1L).studentName("OR1").exam("testexam").avgScore(70.0).build();
-        StudentPass expectStudent2 = StudentPass.builder().id(2L).studentName("OR2").exam("testexam").avgScore(80.0).build();
-        StudentPass notExpectStudent3 = StudentPass.builder().id(3L).studentName("OR3").exam("secondexam").avgScore(80.0).build();
+        String givenTestExam = "testexam";
+        StudentPass expectStudent1 = StudentPassFixture.create("OR1", givenTestExam);
+        StudentPass expectStudent2 = StudentPassFixture.create("OR2", givenTestExam);
+        StudentPass notExpectStudent3 = StudentPassFixture.create("OR3", "another exam");
 
         // stub 만드는 것인 듯 하다. 정해진 값만 리턴하니 말이다.
         Mockito.when(studentPassRepository.findAll()).thenReturn(List.of(
@@ -195,8 +173,6 @@ class StudentScoreServiceMockTest {
                 expectStudent2,
                 notExpectStudent3
         ));
-
-        String givenTestExam = "testexam";
 
         // when
         List<ExamPassStudentResponse> expectResponses = Stream.of(expectStudent1, expectStudent2)
@@ -212,9 +188,10 @@ class StudentScoreServiceMockTest {
     @DisplayName("불합격자 명단 가져오기 검증")
     public void getFailStudentList() {
         // given
-        StudentFail expectStudent1 = StudentFail.builder().id(1L).studentName("OR1").exam("testexam").avgScore(30.0).build();
-        StudentFail expectStudent2 = StudentFail.builder().id(2L).studentName("OR2").exam("testexam").avgScore(50.0).build();
-        StudentFail notExpectStudent3 = StudentFail.builder().id(3L).studentName("OR3").exam("secondexam").avgScore(30.0).build();
+        String givenTestExam = "testexam";
+        StudentFail expectStudent1 = StudentFailFixture.create("OR1", givenTestExam);
+        StudentFail expectStudent2 = StudentFailFixture.create("OR2", givenTestExam);
+        StudentFail notExpectStudent3 = StudentFailFixture.create("OR3", "another exam");
 
         // stub 만드는 것인 듯 하다. 정해진 값만 리턴하니 말이다.
         Mockito.when(studentFailRepository.findAll()).thenReturn(List.of(
@@ -222,8 +199,6 @@ class StudentScoreServiceMockTest {
                 expectStudent2,
                 notExpectStudent3
         ));
-
-        String givenTestExam = "testexam";
 
         // when
         List<ExamFailStudentResponse> expectResponses = Stream.of(expectStudent1, expectStudent2)
