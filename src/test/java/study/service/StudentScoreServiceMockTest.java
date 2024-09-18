@@ -1,11 +1,21 @@
 package study.service;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import study.controller.response.ExamFailStudentResponse;
+import study.controller.response.ExamPassStudentResponse;
+import study.model.StudentFail;
+import study.model.StudentPass;
 import study.repository.StudentFailRepository;
 import study.repository.StudentPassRepository;
 import study.repository.StudentScoreRepository;
+
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 // Mock을 통한 객체의 행동 검증
 class StudentScoreServiceMockTest {
@@ -112,5 +122,77 @@ class StudentScoreServiceMockTest {
                 .save(Mockito.any()); // studentPassRepository.save가 호출되지 말아야 함을 검증
         Mockito.verify(studentFailRepository, Mockito.times(1))
                 .save(Mockito.any()); // studentPassRepository.save가 한번 호출되어야 함을 검증
+    }
+
+    @Test
+    @DisplayName("합격자 명단 가져오기 검증")
+    public void getPassStudentList() {
+        // given
+        StudentScoreRepository studentScoreRepository = Mockito.mock(StudentScoreRepository.class);
+        StudentPassRepository studentPassRepository = Mockito.mock(StudentPassRepository.class);
+        StudentFailRepository studentFailRepository = Mockito.mock(StudentFailRepository.class);
+
+        StudentPass expectStudent1 = StudentPass.builder().id(1L).studentName("OR1").exam("testexam").avgScore(70.0).build();
+        StudentPass expectStudent2 = StudentPass.builder().id(2L).studentName("OR2").exam("testexam").avgScore(80.0).build();
+        StudentPass notExpectStudent3 = StudentPass.builder().id(3L).studentName("OR3").exam("secondexam").avgScore(80.0).build();
+
+        // stub 만드는 것인 듯 하다. 정해진 값만 리턴하니 말이다.
+        Mockito.when(studentPassRepository.findAll()).thenReturn(List.of(
+                expectStudent1,
+                expectStudent2,
+                notExpectStudent3
+        ));
+
+        StudentScoreService studentScoreService = new StudentScoreService(
+                studentScoreRepository,
+                studentPassRepository,
+                studentFailRepository
+        );
+        String givenTestExam = "testexam";
+
+        // when
+        List<ExamPassStudentResponse> expectResponses = Stream.of(expectStudent1, expectStudent2)
+                .map(pass -> new ExamPassStudentResponse(pass.getStudentName(), pass.getAvgScore()))
+                .toList();
+        List<ExamPassStudentResponse> responses = studentScoreService.getPassStudentList(givenTestExam);
+
+        // then
+        assertIterableEquals(expectResponses, responses);
+    }
+
+    @Test
+    @DisplayName("불합격자 명단 가져오기 검증")
+    public void getFailStudentList() {
+        // given
+        StudentScoreRepository studentScoreRepository = Mockito.mock(StudentScoreRepository.class);
+        StudentPassRepository studentPassRepository = Mockito.mock(StudentPassRepository.class);
+        StudentFailRepository studentFailRepository = Mockito.mock(StudentFailRepository.class);
+
+        StudentFail expectStudent1 = StudentFail.builder().id(1L).studentName("OR1").exam("testexam").avgScore(30.0).build();
+        StudentFail expectStudent2 = StudentFail.builder().id(2L).studentName("OR2").exam("testexam").avgScore(50.0).build();
+        StudentFail notExpectStudent3 = StudentFail.builder().id(3L).studentName("OR3").exam("secondexam").avgScore(30.0).build();
+
+        // stub 만드는 것인 듯 하다. 정해진 값만 리턴하니 말이다.
+        Mockito.when(studentFailRepository.findAll()).thenReturn(List.of(
+                expectStudent1,
+                expectStudent2,
+                notExpectStudent3
+        ));
+
+        StudentScoreService studentScoreService = new StudentScoreService(
+                studentScoreRepository,
+                studentPassRepository,
+                studentFailRepository
+        );
+        String givenTestExam = "testexam";
+
+        // when
+        List<ExamFailStudentResponse> expectResponses = Stream.of(expectStudent1, expectStudent2)
+                .map(pass -> new ExamFailStudentResponse(pass.getStudentName(), pass.getAvgScore()))
+                .toList();
+        List<ExamFailStudentResponse> responses = studentScoreService.getFailStudentList(givenTestExam);
+
+        // then
+        assertIterableEquals(expectResponses, responses);
     }
 }
