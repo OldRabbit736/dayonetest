@@ -11,6 +11,7 @@ import study.controller.response.ExamPassStudentResponse;
 import study.model.StudentFail;
 import study.model.StudentPass;
 import study.model.StudentScore;
+import study.model.StudentScoreTestDataBuilder;
 import study.repository.StudentFailRepository;
 import study.repository.StudentPassRepository;
 import study.repository.StudentScoreRepository;
@@ -69,27 +70,17 @@ class StudentScoreServiceMockTest {
     @DisplayName("성적 저장 로직 검증 / 60점 이상인 경우")
     public void saveScoreMockTest1() {
         // given : 평균점수가 60점 이상인 경우
-        String givenStudentName = "OR";
-        String givenExam = "testexam";
-        Integer givenKorScore = 80;
-        Integer givenEnglishScore = 100;
-        Integer givenMathScore = 60;
-
-        StudentScore expectStudentScore = StudentScore.builder()
-                .studentName(givenStudentName)
-                .exam(givenExam)
-                .korScore(givenKorScore)
-                .englishScore(givenEnglishScore)
-                .mathScore(givenMathScore)
+        StudentScore expectStudentScore = StudentScoreTestDataBuilder.passed()
+                .studentName("new name") // Test Data Builder 패턴은 이렇게 오버라이딩도 가능
                 .build();
         StudentPass expectStudentPass = StudentPass.builder()
-                .studentName(givenStudentName)
-                .exam(givenExam)
+                .studentName(expectStudentScore.getStudentName())
+                .exam(expectStudentScore.getExam())
                 .avgScore(
                         (new MyCalculator(0.0)
-                                .add(givenKorScore.doubleValue())
-                                .add(givenEnglishScore.doubleValue())
-                                .add(givenMathScore.doubleValue())
+                                .add(expectStudentScore.getKorScore().doubleValue())
+                                .add(expectStudentScore.getEnglishScore().doubleValue())
+                                .add(expectStudentScore.getMathScore().doubleValue())
                                 .divide(3.0)
                                 .getResult()
                         )
@@ -103,11 +94,11 @@ class StudentScoreServiceMockTest {
 
         // when
         studentScoreService.saveScore(
-                givenStudentName,
-                givenExam,
-                givenKorScore,
-                givenEnglishScore,
-                givenMathScore
+                expectStudentScore.getStudentName(),
+                expectStudentScore.getExam(),
+                expectStudentScore.getKorScore(),
+                expectStudentScore.getEnglishScore(),
+                expectStudentScore.getMathScore()
         );
 
         // then
