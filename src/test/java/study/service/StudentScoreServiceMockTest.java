@@ -11,6 +11,7 @@ import study.controller.response.ExamPassStudentResponse;
 import study.model.StudentFail;
 import study.model.StudentPass;
 import study.model.StudentScore;
+import study.model.StudentScoreFixture;
 import study.model.StudentScoreTestDataBuilder;
 import study.repository.StudentFailRepository;
 import study.repository.StudentPassRepository;
@@ -128,27 +129,15 @@ class StudentScoreServiceMockTest {
     @DisplayName("성적 저장 로직 검증 / 60점 미만인 경우")
     public void saveScoreMockTest2() {
         // given : 평균점수가 60점 미만인 경우
-        String givenStudentName = "OR";
-        String givenExam = "testexam";
-        Integer givenKorScore = 40;
-        Integer givenEnglishScore = 20;
-        Integer givenMathScore = 30;
-
-        StudentScore expectStudentScore = StudentScore.builder()
-                .studentName(givenStudentName)
-                .exam(givenExam)
-                .korScore(givenKorScore)
-                .englishScore(givenEnglishScore)
-                .mathScore(givenMathScore)
-                .build();
+        StudentScore expectStudentScore = StudentScoreFixture.failed();
         StudentFail expectStudentFail = StudentFail.builder()
-                .studentName(givenStudentName)
-                .exam(givenExam)
+                .studentName(expectStudentScore.getStudentName())
+                .exam(expectStudentScore.getExam())
                 .avgScore(
                         (new MyCalculator(0.0)
-                                .add(givenKorScore.doubleValue())
-                                .add(givenEnglishScore.doubleValue())
-                                .add(givenMathScore.doubleValue())
+                                .add(expectStudentScore.getKorScore().doubleValue())
+                                .add(expectStudentScore.getEnglishScore().doubleValue())
+                                .add(expectStudentScore.getMathScore().doubleValue())
                                 .divide(3.0)
                                 .getResult()
                         )
@@ -162,11 +151,11 @@ class StudentScoreServiceMockTest {
 
         // when
         studentScoreService.saveScore(
-                givenStudentName,
-                givenExam,
-                givenKorScore,
-                givenEnglishScore,
-                givenMathScore
+                expectStudentScore.getStudentName(),
+                expectStudentScore.getExam(),
+                expectStudentScore.getKorScore(),
+                expectStudentScore.getEnglishScore(),
+                expectStudentScore.getMathScore()
         );
 
         // then
