@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.3.3'
     id 'io.spring.dependency-management' version '1.1.6'
     id 'jacoco'
+    id 'org.sonarqube' version '4.0.0.2929'
 }
 
 group = 'study'
@@ -117,3 +118,15 @@ tasks.jacocoTestCoverageVerification {
     }
 }
 
+sonar {
+    properties {
+        property("sonar.host.url", "http://localhost:9000")
+        property("sonar.login", "sqp_e39c5268310e76ab6c07ab16a1018551022ef17a")
+        property("sonar.sources", "src/main/java")
+        property("sonar.tests", "src/test/java")
+        property("sonar.sourceEncoding", "UTF-8")
+        property("sonar.projectKey", "dayonetest")
+        property("sonar.projectName", "dayonetest")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/jacoco/jacoco.xml")
+    }
+}
