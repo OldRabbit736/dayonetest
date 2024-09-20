@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.3.3'
     id 'io.spring.dependency-management' version '1.1.6'
+    id 'jacoco'
 }
 
 group = 'study'
@@ -60,6 +61,59 @@ dependencies {
 
 }
 
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+// test task 실행 마지막을 jacocoTestReport task로 장식한다.
 tasks.named('test') {
     useJUnitPlatform()
+
+    jacoco {}
+    finalizedBy(tasks.jacocoTestReport)
 }
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+
+        xml.destination(file("build/jacoco/jacoco.xml"))
+        html.destination(file("build/jacoco/jacoco.html"))
+    }
+
+    finalizedBy(tasks.jacocoTestCoverageVerification)
+}
+
+// 커버리지가 특정 값 이하면 테스트 실패
+tasks.jacocoTestCoverageVerification {
+    violationRules {
+        rule {
+            enabled = true
+            element = "CLASS"
+
+            // 각 클래스의 테스트로 다뤄지는 라인이 해당 클래스 전체 라인의 반을 넘어야 한다.
+            limit {
+                counter = "LINE"
+                value = "COVEREDRATIO"
+                minimum = BigDecimal.valueOf(0.5)
+            }
+
+            // 각 클래스는 100 줄을 초과하면 안된다.
+            limit {
+                counter = "LINE"
+                value = "TOTALCOUNT"
+                maximum = BigDecimal.valueOf(100)
+            }
+
+            excludes = List.of(
+                    "*.controller.*",
+                    "study.DayonetestApplication",
+                    "study.MyCalculatorApplication",
+                    "study.service.KafkaConsumerService"
+            )
+        }
+    }
+}
+
