@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class TestData {
 
-    private String name;
+  private String name;
 }
