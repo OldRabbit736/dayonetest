@@ -142,3 +142,9 @@ spotless {
         endWithNewline()
     }
 }
+
+// 커밋 전에 실행되는 pre-commit hook 추가
+tasks.register('addGitPreCommitHook', Copy) {
+    from 'script/pre-commit'
+    into '.git/hooks'
+}
